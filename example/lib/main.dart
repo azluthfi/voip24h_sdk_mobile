@@ -25,29 +25,29 @@ const API_SECERT = "75c65xxxxx";
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
 
-  Future<void> testGraph() async {
-    // FlutterVoip24hSdk.graphModule.getAccessToken(apiKey: API_KEY, apiSecert: API_SECERT).then((value) => {
-    //   print(value.token)
-    // }, onError: (error) => {
-    //   print(error)
-    // });
-    var oauth = await Voip24hSdkMobile.graphModule.getAccessToken(apiKey: API_KEY, apiSecert: API_SECERT);
-    var body = {"offset": "0"};
-    Voip24hSdkMobile.graphModule.sendRequest(token: oauth.token, endpoint: "call/find", body: body).then(
-            (value) => {
-          print(value.getDataList()),
-          print(value.statusCode()),
-          print(value.message()),
-          print(value.limit()),
-          print(value.offset()),
-          print(value.total()),
-          print(value.isSort()),
-        },
-        onError: (error) => {
-          print(error)
-        }
-    );
-  }
+  // Future<void> testGraph() async {
+  //   // FlutterVoip24hSdk.graphModule.getAccessToken(apiKey: API_KEY, apiSecert: API_SECERT).then((value) => {
+  //   //   print(value.token)
+  //   // }, onError: (error) => {
+  //   //   print(error)
+  //   // });
+  //   var oauth = await Voip24hSdkMobile.graphModule.getAccessToken(apiKey: API_KEY, apiSecert: API_SECERT);
+  //   var body = {"offset": "0"};
+  //   Voip24hSdkMobile.graphModule.sendRequest(token: oauth.token, endpoint: "call/find", body: body).then(
+  //           (value) => {
+  //         print(value.getDataList()),
+  //         print(value.statusCode()),
+  //         print(value.message()),
+  //         print(value.limit()),
+  //         print(value.offset()),
+  //         print(value.total()),
+  //         print(value.isSort()),
+  //       },
+  //       onError: (error) => {
+  //         print(error)
+  //       }
+  //   );
+  // }
 
   void testCallKit() {
     var sipConfiguration = SipConfigurationBuilder(extension: "extension", domain: "domain", password: "password")
@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     requestPermission();
     initPlatformState();
-    testGraph();
+    // testGraph();
     testCallKit();
   }
 

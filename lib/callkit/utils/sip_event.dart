@@ -9,3 +9,11 @@ enum SipEvent {
   Error,
   // Released
 }
+
+enum RegistrationState {
+  None,
+  Progress,
+  Ok,
+  Cleared,
+  Failed,
+}
