@@ -1,10 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 
 enum TransportType {
-  @JsonValue('Tcp')
+  @JsonValue(1)
   Tcp,
-  @JsonValue('Udp')
+  @JsonValue(0)
   Udp,
-  @JsonValue('Tls')
+  @JsonValue(2)
   Tls
 }

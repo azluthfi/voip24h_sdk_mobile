@@ -15,17 +15,17 @@ class SipConfiguaration: Decodable {
     var password: String!
     var domain: String!
     var port: Int = 5060
-    var transportType: String = ""
+    var transportType: Int = ""
     var isKeepAlive: Bool = false
     
     
     func toLpTransportType() -> TransportType {
         switch(transportType) {
-            case "Tcp":
+            case 1:
                 return TransportType.Tcp
-            case "Ddp":
+            case 0:
                 return TransportType.Udp
-            case "Tls":
+            case 2:
                 return TransportType.Tls
             default:
                 return TransportType.Udp
