@@ -27,7 +27,7 @@ Map<String, dynamic> _$SipConfigurationToJson(SipConfiguration instance) =>
     };
 
 const _$TransportTypeEnumMap = {
-  TransportType.Tcp: 'Tcp',
-  TransportType.Udp: 'Udp',
-  TransportType.Tls: 'Tls',
+  TransportType.Tcp: 1,
+  TransportType.Udp: 0,
+  TransportType.Tls: 2,
 };

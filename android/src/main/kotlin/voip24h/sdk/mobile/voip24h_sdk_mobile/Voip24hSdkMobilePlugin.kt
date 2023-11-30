@@ -41,8 +41,18 @@ class Voip24hSdkMobilePlugin : FlutterPlugin, MethodCallHandler, EventChannel.St
     Log.d(this.javaClass.name, "onMethodCall")
     when (call.method) {
       "initSipModule" -> {
-        call.argument<Map<*, *>>("sipConfiguration")?.let {
-          val sipConfiguration = Gson().fromJson(JSONObject(it).toString(), SipConfiguration::class.java)
+        call.argument<Map<String?, Any?>>("sipConfiguration")?.let {
+          val gson = Gson()
+          var sipConfiguration = SipConfiguration(
+            it["extension"] as String,
+            it["domain"] as String,
+            it["password"] as String,
+            it["port"]as Int,
+            it["transportType"] as Int,
+            it["isKeepAlive"] as Boolean,
+          );
+//          val sipConfiguration = gson.fromJson(arg, SipConfiguration::class.java)
+          result.success(sipConfiguration.toString())
           sipManager.initSipModule(sipConfiguration)
           result.success("Init sip module successful")
         } ?: kotlin.run {
