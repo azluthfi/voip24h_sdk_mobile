@@ -15,7 +15,7 @@ class SipConfiguaration: Decodable {
     var password: String!
     var domain: String!
     var port: Int = 5060
-    var transportType: Int = ""
+    var transportType: Int = 0
     var isKeepAlive: Bool = false
     
     
