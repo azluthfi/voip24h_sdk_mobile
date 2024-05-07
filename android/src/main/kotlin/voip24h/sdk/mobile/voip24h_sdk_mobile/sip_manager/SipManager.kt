@@ -21,15 +21,19 @@ internal class SipManager private constructor(context: Context) {
             state: RegistrationState?,
             message: String
         ) {
-            sendEvent(EventAccountRegistrationStateChanged, "registrationState" to (state?.name ?: ""), "message" to message)
+            sendEvent(
+                EventAccountRegistrationStateChanged,
+                "registrationState" to (state?.name ?: ""),
+                "message" to message
+            )
         }
 
         // override fun onAudioDeviceChanged(core: Core, audioDevice: AudioDevice) {
-            // val currentAudioDeviceType = core.currentCall?.outputAudioDevice?.type
-            // if(currentAudioDeviceType != AudioDevice.Type.Speaker && currentAudioDeviceType != AudioDevice.Type.Earpiece) {
-                // return
-            // }
-            // sendEvent("AudioDevicesChanged", createParams("audioOutputType" to currentAudioDeviceType.name))
+        // val currentAudioDeviceType = core.currentCall?.outputAudioDevice?.type
+        // if(currentAudioDeviceType != AudioDevice.Type.Speaker && currentAudioDeviceType != AudioDevice.Type.Earpiece) {
+        // return
+        // }
+        // sendEvent("AudioDevicesChanged", createParams("audioOutputType" to currentAudioDeviceType.name))
         // }
 
         override fun onCallStateChanged(
@@ -43,84 +47,124 @@ internal class SipManager private constructor(context: Context) {
                     Log.d(TAG, "IncomingReceived")
                     val extension = core.defaultAccount?.contactAddress?.username ?: ""
                     val phoneNumber = call.remoteAddress.username ?: ""
-                    sendEvent(EventRing, "extension" to extension, "phoneNumber" to phoneNumber, "callType" to CallType.inbound.value)
+                    sendEvent(
+                        EventRing,
+                        "extension" to extension,
+                        "phoneNumber" to phoneNumber,
+                        "callType" to CallType.inbound.value
+                    )
                 }
+
                 Call.State.OutgoingInit -> {
                     // First state an outgoing call will go through
                     Log.d(TAG, "OutgoingInit")
                 }
+
                 Call.State.OutgoingProgress -> {
                     // First state an outgoing call will go through
                     Log.d(TAG, "OutgoingProgress")
                     val extension = core.defaultAccount?.contactAddress?.username ?: ""
                     val phoneNumber = call.remoteAddress.username ?: ""
-                    sendEvent(EventRing, "extension" to extension, "phoneNumber" to phoneNumber, "callType" to CallType.outbound.value)
+                    sendEvent(
+                        EventRing,
+                        "extension" to extension,
+                        "phoneNumber" to phoneNumber,
+                        "callType" to CallType.outbound.value
+                    )
                 }
+
                 Call.State.OutgoingRinging -> {
                     // Once remote accepts, ringing will commence (180 response)
                     Log.d(TAG, "OutgoingRinging")
                 }
+
                 Call.State.Connected -> {
                     Log.d(TAG, "Connected")
                 }
+
                 Call.State.StreamsRunning -> {
                     // This state indicates the call is active.
                     // You may reach this state multiple times, for example after a pause/resume
                     // or after the ICE negotiation completes
                     // Wait for the call to be connected before allowing a call update
                     Log.d(TAG, "StreamsRunning")
-                    if(!isPause) {
+                    if (!isPause) {
                         timeStartStreamingRunning = System.currentTimeMillis()
                     }
                     isPause = false
                     val callId = call.callLog.callId ?: ""
                     sendEvent(EventUp, "callId" to callId)
                 }
+
                 Call.State.Paused -> {
                     Log.d(TAG, "Paused")
                     isPause = true
                     sendEvent(EventPaused)
                 }
+
                 Call.State.Resuming -> {
                     Log.d(TAG, "Resuming")
                     sendEvent(EventResuming)
                 }
+
                 Call.State.PausedByRemote -> {
                     Log.d(TAG, "PausedByRemote")
                 }
+
                 Call.State.Updating -> {
                     // When we request a call update, for example when toggling video
                     Log.d(TAG, "Updating")
                 }
+
                 Call.State.UpdatedByRemote -> {
                     Log.d(TAG, "UpdatedByRemote")
                 }
+
                 Call.State.Released -> {
-                    if(isMissed(call.callLog)) {
-                        Log.d(TAG,"Missed")
+                    if (isMissed(call.callLog)) {
+                        Log.d(TAG, "Missed")
                         val callee = call.remoteAddress.username ?: ""
                         val totalMissed = core.missedCallsCount.toString()
-                        sendEvent(EventMissed, "phoneNumber" to callee, "totalMissed" to totalMissed)
+                        sendEvent(
+                            EventMissed,
+                            "phoneNumber" to callee,
+                            "totalMissed" to totalMissed
+                        )
                     } else {
                         Log.d(TAG, "Released")
                         // val data = createParams(EventReleased)
                         // FlutterVoip24hSdkPlugin.eventSink?.success(data)
                     }
                 }
+
                 Call.State.End -> {
                     Log.d(TAG, "End")
-                    val duration = if(timeStartStreamingRunning == 0L) 0 else System.currentTimeMillis() - timeStartStreamingRunning
+                    val duration =
+                        if (timeStartStreamingRunning == 0L) 0 else System.currentTimeMillis() - timeStartStreamingRunning
                     sendEvent(EventHangup, "duration" to duration)
                     timeStartStreamingRunning = 0
                 }
+
                 Call.State.Error -> {
                     Log.d(TAG, "Error")
                     sendEvent(EventError, "message" to message)
                 }
+
                 else -> {
                     // Log.d(TAG, "Nothing " + state?.name.toString())
                 }
             }
+        }
+
+        override fun onAudioDeviceChanged(
+            core: Core,
+            audioDevice: AudioDevice,
+        ) {
+            Log.d(
+                TAG,
+                "deviceName：" + audioDevice.deviceName + ", driverName：" + audioDevice.driverName +
+                        ", id：" + audioDevice.id + ", type：" + audioDevice.type + ", capabilities：" + audioDevice.capabilities
+            )
         }
     }
 
@@ -139,10 +183,22 @@ internal class SipManager private constructor(context: Context) {
         mCore.start()
         mCore.removeListener(coreListener)
         mCore.addListener(coreListener)
-        initSipAccount(sipConfiguration.extension, sipConfiguration.password, sipConfiguration.domain, sipConfiguration.port, sipConfiguration.toLpTransportType())
+        initSipAccount(
+            sipConfiguration.extension,
+            sipConfiguration.password,
+            sipConfiguration.domain,
+            sipConfiguration.port,
+            sipConfiguration.toLpTransportType()
+        )
     }
 
-    private fun initSipAccount(ext: String, password: String, domain: String, port: Int, transportType: TransportType) {
+    private fun initSipAccount(
+        ext: String,
+        password: String,
+        domain: String,
+        port: Int,
+        transportType: TransportType
+    ) {
         // To configure a SIP account, we need an Account object and an AuthInfo object
         // The first one is how to connect to the proxy server, the second one stores the credentials
 
@@ -176,13 +232,15 @@ internal class SipManager private constructor(context: Context) {
 
         // Also set the newly added account as default
         mCore.defaultAccount = account
+
+
     }
 
     fun answer(result: Result) {
         Log.d(TAG, "Try to accept call")
         try {
             val currentCall = mCore.currentCall
-            if(currentCall == null) {
+            if (currentCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -200,7 +258,7 @@ internal class SipManager private constructor(context: Context) {
         Log.d(TAG, "Try to accept call")
         try {
             val currentCall = mCore.currentCall
-            if(currentCall == null) {
+            if (currentCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -232,7 +290,7 @@ internal class SipManager private constructor(context: Context) {
             // We also need a CallParams object
             // Create call params expects a Call object for incoming calls, but for outgoing we must use null safely
             val params = mCore.createCallParams(null)
-            if(params == null) {
+            if (params == null) {
                 Log.d(TAG, "Something went wrong")
                 return result.success(false)
             }
@@ -242,7 +300,97 @@ internal class SipManager private constructor(context: Context) {
             params.mediaEncryption = MediaEncryption.None
             // If we wanted to start the call with video directly
             //params.enableVideo(true)
+//            val coreCall = mCore.currentCall
+//            val currentAudioDevice = params.outputAudioDevice
+//            Log.d(TAG, "toggleSpeaker => audioDevice => " + currentAudioDevice?.type?.name)
+//
+            var inputDevices = emptyArray<AudioDevice>()
+            var outputDevices = emptyArray<AudioDevice>()
+            for (audioDevice in mCore.audioDevices) {
+                if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityRecord) {
+                    inputDevices += audioDevice
+                }
+                if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityPlay) {
+                    outputDevices += audioDevice
+                }
+                Log.d(
+                    TAG,
+                    "deviceName：" + audioDevice.deviceName + ", driverName：" + audioDevice.driverName +
+                            ", id：" + audioDevice.id + ", type：" + audioDevice.type + ", capabilities：" + audioDevice.capabilities
+                )
+            }
+            if (inputDevices.isNotEmpty()) {
+                for (inputAudioDevice in inputDevices) {
+                    when (inputAudioDevice.type) {
+                        AudioDevice.Type.Bluetooth -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
 
+                        AudioDevice.Type.BluetoothA2DP -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
+
+                        AudioDevice.Type.Headset -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
+
+                        AudioDevice.Type.AuxLine -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
+
+                        AudioDevice.Type.GenericUsb -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
+
+                        AudioDevice.Type.Headphones -> {
+                            params.inputAudioDevice = inputAudioDevice
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+            if (outputDevices.isNotEmpty()) {
+                for (outputAudioDevice in outputDevices) {
+                    when (outputAudioDevice.type) {
+                        AudioDevice.Type.Bluetooth -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        AudioDevice.Type.BluetoothA2DP -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        AudioDevice.Type.Headset -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        AudioDevice.Type.AuxLine -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        AudioDevice.Type.GenericUsb -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        AudioDevice.Type.Headphones -> {
+                            params.outputAudioDevice = outputAudioDevice
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+            Log.d(
+                TAG,
+                "call == currentInputDevice => deviceName：" + mCore.defaultInputAudioDevice?.deviceName + ", driverName：" + mCore.defaultInputAudioDevice?.driverName +
+                        ", id：" + mCore.defaultInputAudioDevice?.id + ", type：" + mCore.defaultInputAudioDevice?.type + ", capabilities：" + mCore.defaultInputAudioDevice?.capabilities
+            )
+            Log.d(
+                TAG,
+                "call == currentOutDevice => deviceName：" + mCore.defaultOutputAudioDevice?.deviceName + ", driverName：" + mCore.defaultOutputAudioDevice?.driverName +
+                        ", id：" + mCore.defaultOutputAudioDevice?.id + ", type：" + mCore.defaultOutputAudioDevice?.type + ", capabilities：" + mCore.defaultOutputAudioDevice?.capabilities
+            )
             // Finally we start the call
             mCore.inviteAddressWithParams(remoteAddress, params)
             // result.success("Call successful")
@@ -259,7 +407,7 @@ internal class SipManager private constructor(context: Context) {
                 return result.success(false)
             }
             val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            if(coreCall == null) {
+            if (coreCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -276,12 +424,12 @@ internal class SipManager private constructor(context: Context) {
     fun pause(result: Result) {
         Log.d(TAG, "Try to pause")
         try {
-            if(mCore.callsNb == 0) {
+            if (mCore.callsNb == 0) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
             val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            if(coreCall == null) {
+            if (coreCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -298,12 +446,12 @@ internal class SipManager private constructor(context: Context) {
     fun resume(result: Result) {
         Log.d(TAG, "Try to resume")
         try {
-            if(mCore.callsNb == 0)  {
+            if (mCore.callsNb == 0) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
             val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            if(coreCall == null) {
+            if (coreCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -320,20 +468,20 @@ internal class SipManager private constructor(context: Context) {
     fun transfer(recipient: String, result: Result) {
         Log.d(TAG, "Try to transfer")
         try {
-            if(mCore.callsNb == 0)  {
+            if (mCore.callsNb == 0) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
             val domain = mCore.defaultAccount?.params?.domain
             // Log.d(TAG, "Domain: $domain")
             if (domain == null) {
-                 Log.d(TAG, "Can't create sip uri")
+                Log.d(TAG, "Can't create sip uri")
                 // result.error("404", "Can't create sip uri", null)
                 return result.success(false)
             }
             val address = mCore.interpretUrl("sip:$recipient@$domain") ?: return
             val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            if(coreCall == null) {
+            if (coreCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -350,7 +498,7 @@ internal class SipManager private constructor(context: Context) {
     fun sendDTMF(dtmf: String, result: Result) {
         try {
             val coreCall = mCore.currentCall
-            if(coreCall == null) {
+            if (coreCall == null) {
                 Log.d(TAG, "Current call not found")
                 return result.success(false)
             }
@@ -365,22 +513,157 @@ internal class SipManager private constructor(context: Context) {
     }
 
     fun toggleSpeaker(result: Result) {
-        val coreCall = mCore.currentCall ?: return result.error("404", "Current call not found", null)
+        val coreCall =
+            mCore.currentCall ?: return result.error("404", "Current call not found", null)
         val currentAudioDevice = coreCall.outputAudioDevice
         val speakerEnabled = currentAudioDevice?.type == AudioDevice.Type.Speaker
+        Log.d(TAG, "toggleSpeaker " + currentAudioDevice?.type?.name)
+        var inputDevices = emptyArray<AudioDevice>()
+        var outputDevices = emptyArray<AudioDevice>()
         for (audioDevice in mCore.audioDevices) {
-            if (speakerEnabled && audioDevice.type == AudioDevice.Type.Earpiece) {
-                coreCall.outputAudioDevice = audioDevice
-                return result.success(false)
-            } else if (!speakerEnabled && audioDevice.type == AudioDevice.Type.Speaker) {
-                coreCall.outputAudioDevice = audioDevice
-                return result.success(true)
+            if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityRecord) {
+                inputDevices += audioDevice
             }
+            if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityPlay) {
+                outputDevices += audioDevice
+            }
+            Log.d(
+                TAG,
+                "deviceName：" + audioDevice.deviceName + ", driverName：" + audioDevice.driverName +
+                        ", id：" + audioDevice.id + ", type：" + audioDevice.type + ", capabilities：" + audioDevice.capabilities
+            )
+
+//            if (speakerEnabled && audioDevice.type == AudioDevice.Type.Bluetooth) {
+//                coreCall.outputAudioDevice = audioDevice
+//                return result.success(false)
+//            } else if (speakerEnabled && audioDevice.type == AudioDevice.Type.Earpiece) {
+//                coreCall.outputAudioDevice = audioDevice
+//                return result.success(false)
+//            } else if (!speakerEnabled && audioDevice.type == AudioDevice.Type.Speaker) {
+//                coreCall.outputAudioDevice = audioDevice
+//                return result.success(true)
+//            }
+        }
+        if (inputDevices.isNotEmpty()) {
+            var inputAudioDeviceDefault: AudioDevice? = null
+            var inputAudioDeviceSet: AudioDevice? = null
+            for (inputAudioDevice in inputDevices) {
+                when (inputAudioDevice.type) {
+                    AudioDevice.Type.Bluetooth -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.BluetoothA2DP -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.Headset -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.AuxLine -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.GenericUsb -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.Headphones -> {
+                        inputAudioDeviceSet = inputAudioDevice
+                    }
+
+                    AudioDevice.Type.Microphone -> {
+                        inputAudioDeviceDefault = inputAudioDevice
+                    }
+
+                    else -> {
+                    }
+                }
+            }
+            if (speakerEnabled) {
+                if (inputAudioDeviceSet == null) {
+                    inputAudioDeviceSet = inputAudioDeviceDefault
+                }
+                if (inputAudioDeviceSet != null) {
+                    coreCall.inputAudioDevice = inputAudioDeviceSet
+                } else {
+                    coreCall.inputAudioDevice = mCore.defaultInputAudioDevice
+                }
+            } else {
+                if (inputAudioDeviceDefault != null) {
+                    coreCall.inputAudioDevice = inputAudioDeviceDefault
+                } else {
+                    coreCall.inputAudioDevice = mCore.defaultInputAudioDevice
+                }
+            }
+
+        }
+        var outputAudioDeviceSpeaker: AudioDevice? = null
+        var outputAudioDeviceDefault: AudioDevice? = null
+        var outputAudioDeviceSet: AudioDevice? = null
+        if (outputDevices.isNotEmpty()) {
+            for (outputAudioDevice in outputDevices) {
+                when (outputAudioDevice.type) {
+                    AudioDevice.Type.Bluetooth -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.BluetoothA2DP -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.Headset -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.AuxLine -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.GenericUsb -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.Headphones -> {
+                        outputAudioDeviceSet = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.Speaker -> {
+                        outputAudioDeviceSpeaker = outputAudioDevice
+                    }
+
+                    AudioDevice.Type.Earpiece -> {
+                        outputAudioDeviceDefault = outputAudioDevice
+                    }
+
+                    else -> {}
+                }
+
+            }
+        }
+        if (speakerEnabled) {
+            if (outputAudioDeviceSet == null) {
+                outputAudioDeviceSet = outputAudioDeviceDefault
+            }
+            if (outputAudioDeviceSet != null) {
+                coreCall.outputAudioDevice = outputAudioDeviceSet
+            } else {
+                coreCall.outputAudioDevice = mCore.defaultOutputAudioDevice
+            }
+            return result.success(false)
+        } else {
+            if (outputAudioDeviceSpeaker != null) {
+                coreCall.outputAudioDevice = outputAudioDeviceSpeaker
+            } else {
+                coreCall.outputAudioDevice = mCore.defaultOutputAudioDevice
+            }
+            return result.success(true)
         }
     }
 
     fun toggleMic(result: Result) {
-        if(mCore.currentCall == null) {
+        if (mCore.currentCall == null) {
             return result.error("404", "Current call not found", null)
         }
         mCore.isMicEnabled = !mCore.isMicEnabled
@@ -395,7 +678,7 @@ internal class SipManager private constructor(context: Context) {
     fun unregisterSipAccount(result: Result) {
         // Here we will disable the registration of our Account
         val account = mCore.defaultAccount
-        if(account == null) {
+        if (account == null) {
             Log.d(TAG, "Sip account not found")
             return result.success(false)
             // return result.error("404", "Sip account not found", null)
@@ -454,14 +737,14 @@ internal class SipManager private constructor(context: Context) {
     }
 
     // fun removeListener() {
-        // mCore.removeListener(coreListener)
+    // mCore.removeListener(coreListener)
     // }
 
     private fun isMissed(callLog: CallLog?): Boolean {
         return (callLog?.dir == Call.Dir.Incoming && callLog.status == Call.Status.Missed)
     }
 
-    private fun createParams(event: String, vararg params: Pair<String, Any>) : Map<String, Any> {
+    private fun createParams(event: String, vararg params: Pair<String, Any>): Map<String, Any> {
         return mapOf("event" to event, "body" to params.toMap())
     }
 

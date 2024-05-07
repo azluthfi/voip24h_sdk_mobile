@@ -117,6 +117,8 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> requestPermission() async {
     await Permission.microphone.request();
+    await Permission.bluetooth.request();
+    await Permission.bluetoothConnect.request();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -283,7 +285,7 @@ class _MyAppState extends State<MyApp> {
                 OutlinedButton(
                   child: const Text('Call'),
                   onPressed: () {
-                    call("phoneNumber");
+                    call("99999");
                   },
                 ),
                 OutlinedButton(
