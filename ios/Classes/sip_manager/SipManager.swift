@@ -225,6 +225,57 @@ class SipManager {
             // If we wanted to start the call with video directly
             //params.videoEnabled = true
             
+            var inputDevices = [AudioDevice]();
+            var outputDevices = [AudioDevice]();
+            
+            for audioDevice in mCore.audioDevices{
+                if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll  || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityRecord){
+                    inputDevices.append(audioDevice);
+                }
+                if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll  || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityPlay){
+                    outputDevices.append(audioDevice);
+                }
+            }
+            if(!inputDevices.isEmpty){
+                for inputAudioDevice in inputDevices{
+                    switch inputAudioDevice.type {
+                    case .Bluetooth:
+                        params.inputAudioDevice = inputAudioDevice
+                    case .BluetoothA2DP:
+                        params.inputAudioDevice = inputAudioDevice
+                    case .AuxLine:
+                        params.inputAudioDevice = inputAudioDevice
+                    case .GenericUsb:
+                        params.inputAudioDevice = inputAudioDevice
+                    case .Headset:
+                        params.inputAudioDevice = inputAudioDevice
+                    case .Headphones:
+                        params.inputAudioDevice = inputAudioDevice
+                    default:
+                        print("default")
+                    }
+                }
+            }
+            if(!outputDevices.isEmpty){
+                for outputAudioDevice in outputDevices{
+                    switch outputAudioDevice.type {
+                    case .Bluetooth:
+                        params.outputAudioDevice = outputAudioDevice
+                    case .BluetoothA2DP:
+                        params.outputAudioDevice = outputAudioDevice
+                    case .AuxLine:
+                        params.outputAudioDevice = outputAudioDevice
+                    case .GenericUsb:
+                        params.outputAudioDevice = outputAudioDevice
+                    case .Headset:
+                        params.outputAudioDevice = outputAudioDevice
+                    case .Headphones:
+                        params.outputAudioDevice = outputAudioDevice
+                    default:
+                        print("default")
+                    }
+                }
+            }
             // Finally we start the call
             let _ = mCore.inviteAddressWithParams(addr: remoteAddress, params: params)
             // result("Call successful")
@@ -423,25 +474,123 @@ class SipManager {
             return result(FlutterError(code: "404", message: "Current call not found", details: nil))
         }
         let currentAudioDevice = coreCall!.outputAudioDevice
-        let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
+        let speakerEnabled = currentAudioDevice?.type == AudioDevice.Kind.Speaker
         
         // We can get a list of all available audio devices using
         // Note that on tablets for example, there may be no Earpiece device
-        for audioDevice in mCore.audioDevices {
-            // For IOS, the Speaker is an exception, Linphone cannot differentiate Input and Output.
-            // This means that the default output device, the earpiece, is paired with the default phone microphone.
-            // Setting the output audio device to the microphone will redirect the sound to the earpiece.
-            if (speakerEnabled && audioDevice.type == AudioDeviceType.Microphone) {
-                coreCall!.outputAudioDevice = audioDevice
-                return result(false)
-            } else if (!speakerEnabled && audioDevice.type == AudioDeviceType.Speaker) {
-                coreCall!.outputAudioDevice = audioDevice
-                return result(true)
+//        for audioDevice in mCore.audioDevices {
+//            // For IOS, the Speaker is an exception, Linphone cannot differentiate Input and Output.
+//            // This means that the default output device, the earpiece, is paired with the default phone microphone.
+//            // Setting the output audio device to the microphone will redirect the sound to the earpiece.
+//            if (speakerEnabled && audioDevice.type == AudioDevice.Kind.Microphone) {
+//                coreCall!.outputAudioDevice = audioDevice
+//                return result(false)
+//            } else if (!speakerEnabled && audioDevice.type == AudioDevice.Kind.Speaker) {
+//                coreCall!.outputAudioDevice = audioDevice
+//                return result(true)
+//            }
+//            /* If we wanted to route the audio to a bluetooth headset
+//             else if (audioDevice.type == AudioDevice.Type.Bluetooth) {
+//             core.currentCall?.outputAudioDevice = audioDevice
+//             }*/
+//        }
+        
+        var inputDevices = [AudioDevice]();
+        var outputDevices = [AudioDevice]();
+        
+        for audioDevice in mCore.audioDevices{
+            if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll  || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityRecord){
+                inputDevices.append(audioDevice);
             }
-            /* If we wanted to route the audio to a bluetooth headset
-             else if (audioDevice.type == AudioDevice.Type.Bluetooth) {
-             core.currentCall?.outputAudioDevice = audioDevice
-             }*/
+            if (audioDevice.capabilities == AudioDevice.Capabilities.CapabilityAll  || audioDevice.capabilities == AudioDevice.Capabilities.CapabilityPlay){
+                outputDevices.append(audioDevice);
+            }
+        }
+        if(!inputDevices.isEmpty){
+            var inputAudioDeviceDefault: AudioDevice? = nil
+            var inputAudioDeviceSet: AudioDevice? = nil
+            
+            for inputAudioDevice in inputDevices{
+                switch inputAudioDevice.type {
+                case .Bluetooth:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .BluetoothA2DP:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .AuxLine:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .GenericUsb:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .Headset:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .Headphones:
+                    inputAudioDeviceSet = inputAudioDevice
+                case .Microphone:
+                    inputAudioDeviceDefault = inputAudioDevice
+                default:
+                    print("default")
+                }
+            }
+            if(speakerEnabled){
+                if(inputAudioDeviceSet == nil){
+                    inputAudioDeviceSet = inputAudioDeviceDefault
+                }
+                if(inputAudioDeviceSet != nil){
+                    coreCall?.inputAudioDevice = inputAudioDeviceSet;
+                }else{
+                    coreCall?.inputAudioDevice = mCore.defaultInputAudioDevice
+                }
+            }else{
+                if (inputAudioDeviceDefault != nil) {
+                    coreCall?.inputAudioDevice = inputAudioDeviceDefault
+                } else {
+                    coreCall?.inputAudioDevice = mCore.defaultInputAudioDevice
+                }
+            }
+        }
+        var outputAudioDeviceSpeaker: AudioDevice? = nil
+        var outputAudioDeviceDefault: AudioDevice? = nil
+        var outputAudioDeviceSet: AudioDevice? = nil
+        if(!outputDevices.isEmpty){
+            for outputAudioDevice in outputDevices {
+                switch outputAudioDevice.type {
+                case .Bluetooth:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .BluetoothA2DP:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .Headset:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .AuxLine:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .GenericUsb:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .Headphones:
+                    outputAudioDeviceSet = outputAudioDevice
+                case .Speaker:
+                    outputAudioDeviceSpeaker = outputAudioDevice
+                case .Earpiece:
+                    outputAudioDeviceDefault = outputAudioDevice
+                default:
+                    print("default")
+                }
+            }
+        }
+        if(speakerEnabled){
+            if (outputAudioDeviceSet == nil) {
+                outputAudioDeviceSet = outputAudioDeviceDefault
+            }
+            if (outputAudioDeviceSet != nil) {
+                coreCall?.outputAudioDevice = outputAudioDeviceSet
+            } else {
+                coreCall?.outputAudioDevice = mCore.defaultOutputAudioDevice
+            }
+            return result(false);
+        }else{
+            if (outputAudioDeviceSpeaker != nil) {
+                coreCall?.outputAudioDevice = outputAudioDeviceSpeaker
+            } else {
+                coreCall?.outputAudioDevice = mCore.defaultOutputAudioDevice
+            }
+            return result(true)
         }
     }
     
@@ -517,7 +666,7 @@ class SipManager {
     
     func isSpeakerEnabled(result: FlutterResult) {
         let currentAudioDevice = mCore.currentCall?.outputAudioDevice
-        let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
+        let speakerEnabled = currentAudioDevice?.type == AudioDevice.Kind.Speaker
         result(speakerEnabled)
     }
     
