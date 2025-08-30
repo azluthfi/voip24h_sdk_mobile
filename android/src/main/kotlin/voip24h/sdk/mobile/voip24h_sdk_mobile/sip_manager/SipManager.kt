@@ -174,8 +174,28 @@ internal class SipManager private constructor(context: Context) {
     }
 
     init {
-        val factory = Factory.instance()
-        mCore = factory.createCore(null, null, context)
+//        val factory = Factory.instance()
+//        mCore = factory.createCore(null, null, context)
+        Log.d(TAG, "SipManager init block: STARTING") // <--- Tambahkan log awal di sini
+        try {
+            Log.d(TAG, "SipManager init block: Factory start")
+            val factory = Factory.instance()
+            Log.d(TAG, "SipManager init block: Factory obtained")
+
+            // Logika inisialisasi mCore
+            mCore = factory.createCore(null, null, context) // <--- INI ADALAH INISIALISASI UTAMA MCORE
+            Log.d(TAG, "SipManager init block: mCore created successfully")
+
+            // Anda bisa menambahkan log lain di sini untuk setiap langkah penting
+            // Misalnya, jika Anda menginisialisasi properti lain atau mengatur listener awal.
+
+            Log.d(TAG, "SipManager init block: COMPLETED successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "SipManager init block: ERROR during initialization", e)
+            // Penting: Melemparkan kembali exception agar pemanggil (onAttachedToEngine) tahu
+            // bahwa inisialisasi gagal.
+            throw RuntimeException("Failed to initialize SipManager's Core", e)
+        }
     }
 
     fun initSipModule(sipConfiguration: SipConfiguration) {
@@ -754,10 +774,13 @@ internal class SipManager private constructor(context: Context) {
         private var INSTANCE: SipManager? = null
 
         fun getInstance(context: Context): SipManager {
-            return INSTANCE ?: synchronized(SipManager::class.java) {
-                INSTANCE ?: SipManager(context).also {
-                    INSTANCE = it
-                }
+            Log.d("SipManager", "getInstance CALLED")
+            return INSTANCE ?: synchronized(this) {
+                Log.d("SipManager", "Synchronized block entered")
+                val instance = SipManager(context) // Panggil konstruktor
+                Log.d("SipManager", "SipManager instance created in getInstance")
+                INSTANCE = instance
+                instance
             }
         }
     }

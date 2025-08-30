@@ -28,19 +28,22 @@ class Voip24hSdkMobilePlugin : FlutterPlugin, MethodCallHandler, EventChannel.St
   }
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    Log.d("Voip24hSdkMobilePlugin", "onAttachedToEngine CALLED!")
     methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_voip24h_sdk_mobile_method_channel")
     methodChannel.setMethodCallHandler(this)
-
+    Log.d("Voip24hSdkMobilePlugin", "onAttachedToEngine CALLED! 1")
     eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "flutter_voip24h_sdk_mobile_event_channel")
     eventChannel?.setStreamHandler(this)
-
+    Log.d("Voip24hSdkMobilePlugin", "onAttachedToEngine CALLED! 3")
     sipManager = SipManager.getInstance(flutterPluginBinding.applicationContext)
+     Log.d("Voip24hSdkMobilePlugin", "sipManager initialized in onAttachedToEngine ")
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    Log.d(this.javaClass.name, "onMethodCall")
+    Log.d(this.javaClass.name, "onMethodCall => " + call.method)
     when (call.method) {
       "initSipModule" -> {
+        Log.d("Voip24hSdkMobilePlugin", "initSipModule initSipModule ")
         call.argument<Map<String?, Any?>>("sipConfiguration")?.let {
           val gson = Gson()
           var sipConfiguration = SipConfiguration(
@@ -53,9 +56,12 @@ class Voip24hSdkMobilePlugin : FlutterPlugin, MethodCallHandler, EventChannel.St
           );
 //          val sipConfiguration = gson.fromJson(arg, SipConfiguration::class.java)
           result.success(sipConfiguration.toString())
+          Log.d("Voip24hSdkMobilePlugin", "Init sip module  " + sipConfiguration.toString())
           sipManager.initSipModule(sipConfiguration)
+          Log.d("Voip24hSdkMobilePlugin", "Init sip module successful ")
           result.success("Init sip module successful")
         } ?: kotlin.run {
+          Log.d("Voip24hSdkMobilePlugin", "Sip configuration is not valid ")
           result.error("404", "Sip configuration is not valid", null)
         }
       }
