@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - linphone-sdk-novideo (5.2.66)
+  - linphone-sdk-novideo (5.3.44)
   - permission_handler_apple (9.0.4):
     - Flutter
   - voip24h_sdk_mobile (0.0.1):
@@ -9,7 +9,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - linphone-sdk-novideo (= 5.2.66)
+  - linphone-sdk-novideo (= 5.3.44)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - voip24h_sdk_mobile (from `.symlinks/plugins/voip24h_sdk_mobile/ios`)
 
@@ -26,11 +26,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/voip24h_sdk_mobile/ios"
 
 SPEC CHECKSUMS:
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  linphone-sdk-novideo: 77a00c398e72e0a7641cb03838e468bf3e821648
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  linphone-sdk-novideo: 9fefecb5f34f205f85335acaa663339189bfbda3
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   voip24h_sdk_mobile: 0ddd687b86366be25c0c4b261cf9da7e4d9e10de
 
-PODFILE CHECKSUM: b4a44ee09ed487f2744cfe9bf3d084e1d39bd581
+PODFILE CHECKSUM: 3e9b4c609f2085418454105101a3bd7d9f3c16db
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2
